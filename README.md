@@ -38,8 +38,8 @@ go install -v github.com/ffuf/ffuf@latest
 ### 2. Python Setup
 Clone the repository and install the dependencies:
 ```bash
-git clone https://github.com/examvijeta/bug-bounty.git
-cd bug-bounty
+git clone https://github.com/examvijeta/AstraBounty.git
+cd AstraBounty
 pip install -r requirements.txt
 ```
 
