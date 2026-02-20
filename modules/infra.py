@@ -15,6 +15,12 @@ class InfraModule:
         print(f"[*] Starting Amass Deep Recon for {self.target}...")
         try:
             command = ["amass", "enum", "-d", self.target, "-passive", "-silent"]
+            
+            # Check for local config.ini
+            if os.path.exists("config.ini"):
+                command.extend(["-config", "config.ini"])
+                print("[*] Info: Using local Amass config.ini with API keys.")
+
             result = subprocess.run(command, capture_output=True, text=True)
             subs = result.stdout.splitlines()
             print(f"[+] Amass found {len(subs)} subdomains.")

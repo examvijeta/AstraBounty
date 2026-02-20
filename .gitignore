@@ -1,0 +1,10 @@
+# AstraBounty Git Ignore
+astra_results/
+__pycache__/
+*.pyc
+.env
+config.ini
+historic_urls.txt
+live_hosts.txt
+discovered_secrets.txt
+*.log
