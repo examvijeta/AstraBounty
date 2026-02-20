@@ -69,10 +69,16 @@ Fetch all historic URLs from the last 10 years and scan them for leaked API keys
 python astrabounty.py -d tesla.com --god-mode
 ```
 
-### 4. Full Power with Real-time Alerts
-Run God Mode and get notified on Discord/Telegram the moment a secret is found.
+### 4. Full Power with Real-time Alerts (Discord)
+Run God Mode and get notified on Discord the moment a secret is found.
 ```bash
 python astrabounty.py -d tesla.com --god-mode --webhook "https://discord.com/api/webhooks/your-id/your-token"
+```
+
+### 5. Full Power with Real-time Alerts (Telegram)
+Get alerts on your Telegram phone.
+```bash
+python astrabounty.py -d tesla.com --god-mode --tg-token "123456:ABC-DEF" --tg-chat-id "987654321"
 ```
 
 ### 5. Custom Output Directory
@@ -93,7 +99,7 @@ python astrabounty.py -d tesla.com -o myscans/tesla_report
 ### 2. Webhook Setup (Telegram)
 1. Message `@BotFather` on Telegram to create a bot and get your **API Token**.
 2. Get your **Chat ID** using `@userinfobot`.
-3. Use your token/ID in the `notifier.py` or as a direct string (Custom integration coming soon!).
+3. Use these with the `--tg-token` and `--tg-chat-id` flags.
 
 ### 3. Amass Config (For --deep)
 To make the `--deep` mode even more powerful, add API keys (Shodan, SecurityTrails, etc.) to your Amass config:
