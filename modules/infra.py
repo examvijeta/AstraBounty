@@ -1,5 +1,6 @@
 import subprocess
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 class InfraModule:
     """Advanced Infrastructure Mapping using Amass and Subfinder."""
@@ -11,31 +12,38 @@ class InfraModule:
 
     def run_amass(self):
         """Runs OWASP Amass for deep discovery."""
-        print(f"[*] Running Amass Deep Recon for {self.target} (this may take time)...")
+        print(f"[*] Starting Amass Deep Recon for {self.target}...")
         try:
-            # Note: amass enum -d target
             command = ["amass", "enum", "-d", self.target, "-passive", "-silent"]
             result = subprocess.run(command, capture_output=True, text=True)
-            return result.stdout.splitlines()
+            subs = result.stdout.splitlines()
+            print(f"[+] Amass found {len(subs)} subdomains.")
+            return subs
         except FileNotFoundError:
-            print("[!] Amass not found. Skipping deep recon.")
             return []
 
     def run_subfinder(self):
         """Runs Subfinder for fast discovery."""
-        print(f"[*] Running Subfinder for {self.target}...")
+        print(f"[*] Starting Subfinder for {self.target}...")
         try:
             command = ["subfinder", "-d", self.target, "-silent"]
             result = subprocess.run(command, capture_output=True, text=True)
-            return result.stdout.splitlines()
+            subs = result.stdout.splitlines()
+            print(f"[+] Subfinder found {len(subs)} subdomains.")
+            return subs
         except FileNotFoundError:
-            print("[!] Subfinder not found.")
             return []
 
     def full_recon(self):
-        """Combines results from multiple tools."""
-        amass_subs = self.run_amass()
-        subfinder_subs = self.run_subfinder()
+        """Combines results from multiple tools running in parallel."""
+        print("[*] Phase 1: Infrastructure Mapping (Parallel)")
+        
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_amass = executor.submit(self.run_amass)
+            future_subfinder = executor.submit(self.run_subfinder)
+            
+            amass_subs = future_amass.result()
+            subfinder_subs = future_subfinder.result()
         
         # Merge and dedup
         total_subs = list(set(amass_subs + subfinder_subs))
@@ -44,5 +52,5 @@ class InfraModule:
             for sub in total_subs:
                 f.write(f"{sub}\n")
         
-        print(f"[+] Total unique subdomains discovered: {len(total_subs)}")
+        print(f"[+] Recon complete. Total unique subdomains: {len(total_subs)}")
         return self.all_subdomains_file

@@ -5,6 +5,8 @@ from modules.infra import InfraModule
 from modules.spider import SpiderModule
 from modules.fuzzer import FuzzerModule
 from modules.dashboard import DashboardModule
+from modules.utils import check_tools
+import subprocess
 
 def main():
     parser = argparse.ArgumentParser(description="AstraBounty - Professional Bug Bounty Framework")
@@ -19,24 +21,49 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    print(f"\n[AstraBounty] Starting Mission: {target}")
+    print(f"\n🚀 [AstraBounty] Launching Mission: {target}")
+    
+    # 0. Health Check
+    required_tools = ["amass", "subfinder", "httpx", "katana", "ffuf"]
+    check_tools(required_tools)
+
     start_time = datetime.datetime.now()
 
     # 1. Infrastructure Mapping
     infra = InfraModule(target, output_dir)
-    print("[*] Phase 1: Infrastructure Mapping")
     recon_file = infra.full_recon()
 
-    # (In a real scenario, we'd run httpx here to get live hosts, 
-    # but for simplicity, let's assume infra.all_subdomains_file has interesting targets)
-    
-    # Placeholder stats for the dashboard demo
+    # 2. Live Host Discovery (httpx)
+    print("\n[*] Phase 2: Live Host Discovery (httpx)")
+    live_hosts_file = os.path.join(output_dir, "live_hosts.txt")
+    live_hosts_count = 0
+    try:
+        command = ["httpx", "-l", recon_file, "-silent", "-o", live_hosts_file]
+        subprocess.run(command)
+        if os.path.exists(live_hosts_file):
+            with open(live_hosts_file, "r") as f:
+                live_hosts_count = len(f.readlines())
+        print(f"[+] Found {live_hosts_count} live hosts.")
+    except Exception as e:
+        print(f"[!] Httpx error: {e}")
+
+    # 3. Advanced Spidering (Katana)
+    print("\n[*] Phase 3: Advanced Spidering (Katana)")
+    spider = SpiderModule(live_hosts_file, output_dir)
+    spider.run_katana()
+
+    # Calculate real stats
+    endpoints_count = 0
+    if os.path.exists(spider.endpoints_file):
+        with open(spider.endpoints_file, "r") as f:
+            endpoints_count = len(f.readlines())
+
     stats = {
         "date": start_time.strftime("%Y-%m-%d %H:%M:%S"),
         "subdomains_count": 0,
-        "live_hosts_count": 0,
-        "endpoints_count": 0,
-        "critical_count": 0,
+        "live_hosts_count": live_hosts_count,
+        "endpoints_count": endpoints_count,
+        "critical_count": 0, # Placeholder for Nuclei integration in next version
         "recon_summary": ""
     }
 
@@ -46,18 +73,13 @@ def main():
             stats["subdomains_count"] = len(lines)
             stats["recon_summary"] = "".join(lines[:10]) + ("\n..." if len(lines) > 10 else "")
 
-    # 2. Advanced Spidering
-    print("[*] Phase 2: Advanced Spidering (Katana)")
-    spider = SpiderModule(recon_file, output_dir)
-    # spider.run_katana() # Not running in this demo to avoid shell hangs
-
-    # 3. Visual Reporting
+    # 4. Visual Reporting
     dash = DashboardModule(target, output_dir)
     dash.generate(stats)
 
     end_time = datetime.datetime.now()
     duration = end_time - start_time
-    print(f"\n[+] AstraBounty scan completed in {duration}")
+    print(f"\n✅ [AstraBounty] Mission Completed in {duration}")
     print(f"[+] Final Dashboard: {dash.dashboard_file}\n")
 
 if __name__ == "__main__":
