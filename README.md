@@ -45,20 +45,60 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Usage
+---
 
-Run a deep mission against any authorized target:
+## 🚀 Usage Guide & Examples
 
+Run a mission using the features you need. Here are the most common scenarios:
+
+### 1. Simple Recon (Fast)
+Just find subdomains and check if they are live.
 ```bash
-python astrabounty.py -d target-domain.com --god-mode
+python astrabounty.py -d tesla.com
 ```
 
-### Command Line Options:
-- `-d`, `--domain`: Target domain to scan (Required).
-- `-o`, `--output`: Directory to save results (Default: `astra_results`).
-- `--deep`: Enable intensive recon mode using Amass.
-- `--god-mode`: Unleash extreme power (Historic data + Secret hunting).
-- `--webhook`: Optional Discord/Telegram webhook for alerts.
+### 2. Deep Infrastructure Mapping
+Use this to find subdomains that are hidden behind complex DNS layers (Requires Amass).
+```bash
+python astrabounty.py -d tesla.com --deep
+```
+
+### 3. God Mode: Extreme Intelligence
+Fetch all historic URLs from the last 10 years and scan them for leaked API keys/secrets.
+```bash
+python astrabounty.py -d tesla.com --god-mode
+```
+
+### 4. Full Power with Real-time Alerts
+Run God Mode and get notified on Discord/Telegram the moment a secret is found.
+```bash
+python astrabounty.py -d tesla.com --god-mode --webhook "https://discord.com/api/webhooks/your-id/your-token"
+```
+
+### 5. Custom Output Directory
+Save your mission data in a specific folder.
+```bash
+python astrabounty.py -d tesla.com -o myscans/tesla_report
+```
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1. Webhook Setup (Discord)
+1. Open your Discord server and go to **Server Settings > Integrations**.
+2. Click **Webhooks > New Webhook**.
+3. Copy the **Webhook URL** and use it with the `--webhook` flag.
+
+### 2. Webhook Setup (Telegram)
+1. Message `@BotFather` on Telegram to create a bot and get your **API Token**.
+2. Get your **Chat ID** using `@userinfobot`.
+3. Use your token/ID in the `notifier.py` or as a direct string (Custom integration coming soon!).
+
+### 3. Amass Config (For --deep)
+To make the `--deep` mode even more powerful, add API keys (Shodan, SecurityTrails, etc.) to your Amass config:
+- Create a file at `~/.config/amass/config.ini`.
+- Follow the [Amass Official Guide](https://github.com/owasp-amass/amass/blob/master/doc/user_guide.md#the-configuration-file) to add keys.
 
 ---
 
