@@ -14,7 +14,9 @@ def main():
     parser.add_argument("-o", "--output", default="astra_results", help="Output directory")
     parser.add_argument("--deep", action="store_true", help="Enable deep recon using Amass")
     parser.add_argument("--god-mode", action="store_true", help="Enable extreme-power features (history, secret hunting)")
-    parser.add_argument("--webhook", help="Discord/Telegram webhook/token for alerts")
+    parser.add_argument("--webhook", help="Discord webhook URL for alerts")
+    parser.add_argument("--tg-token", help="Telegram Bot API Token")
+    parser.add_argument("--tg-chat-id", help="Telegram Chat ID")
 
     args = parser.parse_args()
     target = args.domain
@@ -31,7 +33,11 @@ def main():
     check_tools(required_tools)
 
     start_time = datetime.datetime.now()
-    notifier = Notifier(webhook_url=args.webhook)
+    notifier = Notifier(
+        webhook_url=args.webhook, 
+        telegram_token=args.tg_token, 
+        telegram_chat_id=args.tg_chat_id
+    )
 
     # 1. Infrastructure Mapping
     infra = InfraModule(target, output_dir)
@@ -74,7 +80,9 @@ def main():
         if os.path.exists(scraper.secrets_file):
             with open(scraper.secrets_file, "r") as f:
                 secrets_count = len(f.readlines())
-            notifier.send_discord(f"🚨 CRITICAL: Found {secrets_count} secrets for {target}!")
+            alert_msg = f"🚨 CRITICAL: Found {secrets_count} secrets for {target}!"
+            notifier.send_discord(alert_msg)
+            notifier.send_telegram(alert_msg)
 
     # Calculate real stats
     endpoints_count = 0
