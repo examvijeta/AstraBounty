@@ -53,7 +53,11 @@ class DashboardModule:
                 <div class="stat-value">{stats.get('endpoints_count', 0)}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Critical Vulnerabilities</div>
+                <div class="stat-label">Secrets Found</div>
+                <div class="stat-value" style="color: #ff9d00;">{stats.get('secrets_count', 0)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Critical Findings</div>
                 <div class="stat-value" style="color: #da3633;">{stats.get('critical_count', 0)}</div>
             </div>
         </div>

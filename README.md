@@ -10,7 +10,9 @@
 - **🕷️ Advanced Spidering:** Leverages ProjectDiscovery's Katana for deep crawling, JS file extraction, and endpoint discovery.
 - **🔍 API & Parameter Hunting:** Integrated Ffuf and Arjun for ultra-fast directory brute-forcing and hidden parameter discovery.
 - **📊 Interactive Visual Dashboard:** Generates a modern, dark-themed HTML dashboard to visualize the attack surface and vulnerabilities instantly.
-- **⚡ High Performance:** Multi-threaded orchestration written in Python for maximum speed.
+- **⚡ High Performance:** Multi-threaded orchestration written in Python.
+- **🔱 God Mode (NEW):** Historic data scraping (Wayback) and automated Secret/API Key hunting.
+- **🔔 Real-time Alerts:** Integrated Discord/Telegram notifications for critical findings.
 
 ---
 
@@ -48,13 +50,15 @@ pip install -r requirements.txt
 Run a deep mission against any authorized target:
 
 ```bash
-python astrabounty.py -d target-domain.com --deep
+python astrabounty.py -d target-domain.com --god-mode
 ```
 
 ### Command Line Options:
 - `-d`, `--domain`: Target domain to scan (Required).
 - `-o`, `--output`: Directory to save results (Default: `astra_results`).
 - `--deep`: Enable intensive recon mode using Amass.
+- `--god-mode`: Unleash extreme power (Historic data + Secret hunting).
+- `--webhook`: Optional Discord/Telegram webhook for alerts.
 
 ---
 
