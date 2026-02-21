@@ -138,10 +138,27 @@ def main():
     dash = DashboardModule(target, output_dir)
     dash.generate(stats)
 
+    # 8. Automated File Exfiltration (Telegram)
+    if args.tg_token and args.tg_chat_id:
+        print("\n[*] Exfiltrating results to Telegram...")
+        notifier.send_telegram(f"🎨 Mission Dashboard for {target} is ready!")
+        notifier.send_document(dash.dashboard_file)
+        
+        # Send other important findings
+        if args.omni:
+            from modules.vulnerability import VulnerabilityModule
+            vuln = VulnerabilityModule(target, output_dir)
+            if os.path.exists(vuln.nuclei_file): notifier.send_document(vuln.nuclei_file)
+            if os.path.exists(vuln.xss_file): notifier.send_document(vuln.xss_file)
+        
+        if os.path.exists(os.path.join(output_dir, "discovered_secrets.txt")):
+            notifier.send_document(os.path.join(output_dir, "discovered_secrets.txt"))
+
     end_time = datetime.now()
     duration = end_time - start_time
     print(f"\n✅ [AstraBounty] Autonomous Mission Completed in {duration}")
-    print(f"[+] Final Intelligence Report: {dash.dashboard_file}\n")
+    print(f"[+] Final Intelligence Report: {dash.dashboard_file}")
+    if args.tg_token: print("[+] Results sent to your Telegram chat! 📱")
 
 if __name__ == "__main__":
     main()
