@@ -23,6 +23,13 @@ class SecretScraper:
             return
 
         findings = []
+        
+        # 1. Advanced JS Intelligence (JSLuice)
+        if file_path.endswith(".js"):
+            js_findings = self.extract_jsluice(file_path)
+            findings.extend(js_findings)
+
+        # 2. Regex Based Search
         try:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
@@ -32,9 +39,36 @@ class SecretScraper:
                         findings.append(f"[{name}] {match.group(0)} (Found in: {os.path.basename(file_path)})")
             
             if findings:
+                # Dedup
+                findings = list(set(findings))
                 with open(self.secrets_file, "a", encoding="utf-8") as f:
                     for find in findings:
                         f.write(f"{find}\n")
-                print(f"[+] Found {len(findings)} potential secrets in {os.path.basename(file_path)}!")
+                print(f"[+] Found {len(findings)} potential secrets/endpoints in {os.path.basename(file_path)}!")
         except Exception as e:
             print(f"[!] Error scanning {file_path}: {e}")
+
+    def extract_jsluice(self, js_file):
+        """Uses jsluice to extract secrets and endpoints from JS files."""
+        findings = []
+        try:
+            # Extract secrets
+            cmd_secrets = ["jsluice", "secrets", js_file]
+            result = subprocess.run(cmd_secrets, capture_output=True, text=True)
+            if result.stdout:
+                for line in result.stdout.splitlines():
+                    findings.append(f"[JSLuice-Secret] {line} (File: {os.path.basename(js_file)})")
+            
+            # Extract endpoints
+            cmd_urls = ["jsluice", "urls", js_file]
+            result = subprocess.run(cmd_urls, capture_output=True, text=True)
+            if result.stdout:
+                for line in result.stdout.splitlines():
+                    findings.append(f"[JSLuice-URL] {line} (File: {os.path.basename(js_file)})")
+                    
+        except FileNotFoundError:
+            pass # jsluice not installed, fall back to regex
+        except Exception as e:
+            print(f"[!] JSLuice error on {js_file}: {e}")
+        
+        return findings

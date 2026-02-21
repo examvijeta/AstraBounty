@@ -37,7 +37,7 @@ def main():
     elif args.god_mode: print("🔱 GOD MODE ENABLED: Unleashing extreme power...")
     
     # 0. Health Check
-    required_tools = ["amass", "subfinder", "httpx", "katana", "ffuf", "nuclei", "dalfox"]
+    required_tools = ["amass", "subfinder", "httpx", "katana", "ffuf", "nuclei", "dalfox", "jsluice"]
     check_tools(required_tools)
 
     start_time = datetime.datetime.now()

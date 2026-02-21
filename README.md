@@ -60,6 +60,7 @@ Built on top of the world's best security tools:
 - `Httpx` (Discovery)
 - `Katana` (Spider)
 - `Nuclei` & `Dalfox` (Autonomous Vulns)
+- `JSLuice` (JS Intelligence)
 - `FFUF` (Fuzzing)
 
 🚀 **Happy Hunting with AstraBounty!**
