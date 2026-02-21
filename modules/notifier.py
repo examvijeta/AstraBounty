@@ -1,4 +1,5 @@
 import requests
+import os
 
 class Notifier:
     """Sends real-time alerts to Discord or Telegram."""
