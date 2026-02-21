@@ -5,9 +5,9 @@ Google Cloud Shell is a restricted environment where you do NOT have `sudo` acce
 ## 🛠️ Installation Steps
 
 ### 1. Update PATH Environment
-Run this first so your terminal can "find" the tools after you install them:
+Run this first. Isse aapki Go bin folder ko system files se zyada "priority" (importance) milegi:
 ```bash
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
+echo 'export PATH=$(go env GOPATH)/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
