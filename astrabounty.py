@@ -146,8 +146,6 @@ def main():
         
         # Send other important findings
         if args.omni:
-            from modules.vulnerability import VulnerabilityModule
-            vuln = VulnerabilityModule(target, output_dir)
             if os.path.exists(vuln.nuclei_file): notifier.send_document(vuln.nuclei_file)
             if os.path.exists(vuln.xss_file): notifier.send_document(vuln.xss_file)
         
