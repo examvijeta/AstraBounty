@@ -39,6 +39,13 @@ def main():
     # 0. Health Check
     required_tools = ["amass", "subfinder", "httpx", "katana", "ffuf", "nuclei", "dalfox", "jsluice"]
     check_tools(required_tools)
+    
+    # Helper to get the best path for a tool
+    def get_tool_path(name):
+        go_bin = os.path.expanduser("~/go/bin")
+        if os.path.exists(os.path.join(go_bin, name)):
+            return os.path.join(go_bin, name)
+        return name # fall back to PATH
 
     start_time = datetime.datetime.now()
     notifier = Notifier(
@@ -48,6 +55,8 @@ def main():
     )
 
     # 1. Infrastructure Mapping
+    # (Infrastructure and Spyder modules already handle their internal paths, 
+    # but we can pass names or just rely on the updated PATH in the shell)
     infra = InfraModule(target, output_dir)
     recon_file = infra.full_recon()
 
@@ -62,7 +71,9 @@ def main():
     live_hosts_file = os.path.join(output_dir, "live_hosts.txt")
     live_hosts_count = 0
     try:
-        command = ["httpx", "-l", recon_file, "-silent", "-o", live_hosts_file]
+        # Use absolute path for httpx to avoid conflicts
+        httpx_bin = get_tool_path("httpx")
+        command = [httpx_bin, "-l", recon_file, "-silent", "-o", live_hosts_file]
         if args.h1_user: command.extend(["-H", f"X-Bug-Bounty: {args.h1_user}"])
         if args.email: command.extend(["-H", f"X-Test-Account-Email: {args.email}"])
         
