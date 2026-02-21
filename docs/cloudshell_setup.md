@@ -31,7 +31,7 @@ go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
 go install -v github.com/hahwul/dalfox/v2@latest
 
 # Install JSLuice (JS Intelligence)
-go install -v github.com/bishopfox/jsluice/cmd/jsluice@latest
+go install -v github.com/BishopFox/jsluice/cmd/jsluice@latest
 ```
 
 ### 3. Install Python Dependencies
