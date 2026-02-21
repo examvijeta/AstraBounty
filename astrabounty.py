@@ -9,6 +9,7 @@ from modules.utils import check_tools
 from modules.history import HistoryModule
 from modules.secrets import SecretScraper
 from modules.notifier import Notifier
+from modules.vulnerability import VulnerabilityModule
 import subprocess
 
 def main():
@@ -17,6 +18,7 @@ def main():
     parser.add_argument("-o", "--output", default="astra_results", help="Output directory")
     parser.add_argument("--deep", action="store_true", help="Enable deep recon using Amass")
     parser.add_argument("--god-mode", action="store_true", help="Enable extreme-power features (history, secret hunting)")
+    parser.add_argument("--omni", action="store_true", help="FULLY AUTONOMOUS: Recon -> Discovery -> Vuln Scan -> Reporting")
     parser.add_argument("--webhook", help="Discord webhook URL for alerts")
     parser.add_argument("--tg-token", help="Telegram Bot API Token")
     parser.add_argument("--tg-chat-id", help="Telegram Chat ID")
@@ -31,10 +33,11 @@ def main():
         os.makedirs(output_dir)
 
     print(f"\n🚀 [AstraBounty] Launching Mission: {target}")
-    if args.god_mode: print("🔱 GOD MODE ENABLED: Unleashing extreme power...")
+    if args.omni: print("🌌 OMNIMODE ENABLED: Fully Autonomous Hacking in progress...")
+    elif args.god_mode: print("🔱 GOD MODE ENABLED: Unleashing extreme power...")
     
     # 0. Health Check
-    required_tools = ["amass", "subfinder", "httpx", "katana", "ffuf"]
+    required_tools = ["amass", "subfinder", "httpx", "katana", "ffuf", "nuclei", "dalfox"]
     check_tools(required_tools)
 
     start_time = datetime.datetime.now()
@@ -48,9 +51,9 @@ def main():
     infra = InfraModule(target, output_dir)
     recon_file = infra.full_recon()
 
-    # 2. Historic Intelligence (God Mode)
+    # 2. Historic Intelligence (God Mode / Omni)
     historic_urls_file = None
-    if args.god_mode:
+    if args.god_mode or args.omni:
         history = HistoryModule(target, output_dir)
         historic_urls_file = history.fetch_wayback()
 
@@ -60,7 +63,6 @@ def main():
     live_hosts_count = 0
     try:
         command = ["httpx", "-l", recon_file, "-silent", "-o", live_hosts_file]
-        # Adding headers to httpx too if provided
         if args.h1_user: command.extend(["-H", f"X-Bug-Bounty: {args.h1_user}"])
         if args.email: command.extend(["-H", f"X-Test-Account-Email: {args.email}"])
         
@@ -77,9 +79,9 @@ def main():
     spider = SpiderModule(live_hosts_file, output_dir)
     spider.run_katana(h1_user=args.h1_user, email=args.email)
 
-    # 5. Secret & Intelligence Hunting (God Mode)
+    # 5. Secret & Intelligence Hunting (God Mode / Omni)
     secrets_count = 0
-    if args.god_mode:
+    if args.god_mode or args.omni:
         print("\n[*] Phase 4: Secret Hunting & Historic Analysis")
         scraper = SecretScraper(output_dir)
         if os.path.exists(spider.endpoints_file): scraper.scan_file(spider.endpoints_file)
@@ -92,7 +94,25 @@ def main():
             notifier.send_discord(alert_msg)
             notifier.send_telegram(alert_msg)
 
-    # Calculate real stats
+    # 6. Autonomous Vulnerability Scanning (OmniMode)
+    critical_count = 0
+    if args.omni:
+        print("\n[*] Phase 5: Autonomous Vulnerability Discovery (OmniMode)")
+        vuln = VulnerabilityModule(target, output_dir)
+        
+        # Scan hosts and endpoints for vulns
+        vuln_file = vuln.run_nuclei(live_hosts_file, h1_user=args.h1_user, email=args.email)
+        xss_file = vuln.run_dalfox(spider.endpoints_file)
+        
+        if vuln_file and os.path.exists(vuln_file):
+            with open(vuln_file, "r") as f:
+                lines = f.readlines()
+                critical_count = len(lines)
+                if critical_count > 0:
+                    notifier.send_discord(f"☢️ VULN FOUND: {critical_count} critical/high bugs detected on {target}!")
+                    notifier.send_telegram(f"☢️ VULN FOUND: {critical_count} bugs on {target}!")
+
+    # Calculate final stats
     endpoints_count = 0
     if os.path.exists(spider.endpoints_file):
         with open(spider.endpoints_file, "r") as f:
@@ -104,7 +124,7 @@ def main():
         "live_hosts_count": live_hosts_count,
         "endpoints_count": endpoints_count,
         "secrets_count": secrets_count,
-        "critical_count": 0,
+        "critical_count": critical_count,
         "recon_summary": ""
     }
 
@@ -114,14 +134,14 @@ def main():
             stats["subdomains_count"] = len(lines)
             stats["recon_summary"] = "".join(lines[:10]) + ("\n..." if len(lines) > 10 else "")
 
-    # 6. Visual Reporting
+    # 7. Visual Reporting
     dash = DashboardModule(target, output_dir)
     dash.generate(stats)
 
-    end_time = datetime.datetime.now()
+    end_time = datetime.now()
     duration = end_time - start_time
-    print(f"\n✅ [AstraBounty] Mission Completed in {duration}")
-    print(f"[+] Final Dashboard: {dash.dashboard_file}\n")
+    print(f"\n✅ [AstraBounty] Autonomous Mission Completed in {duration}")
+    print(f"[+] Final Intelligence Report: {dash.dashboard_file}\n")
 
 if __name__ == "__main__":
     main()
